@@ -36,8 +36,15 @@ void initLocalNotification (){
 void firebaseInit(){
     FirebaseMessaging.onMessage.listen((message) {
 
-      print(message.notification!.title.toString());
-      print(message.notification!.body.toString());
+      var androidInitializationSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+      var iosInitializationSettings = DarwinInitializationSettings();
+
+      var initializationSetting = InitializationSettings(
+
+        android: androidInitializationSettings,
+        iOS: iosInitializationSettings,
+
+      );
 
     });
 }
