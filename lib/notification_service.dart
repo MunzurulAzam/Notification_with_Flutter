@@ -1,5 +1,12 @@
+import 'dart:math';
+
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class NotificationService{
@@ -29,24 +36,84 @@ class NotificationService{
 
 }
 
-void initLocalNotification (){
+void initLocalNotification (BuildContext context, RemoteMessage message) async {
+
+
+  var androidInitializationSettings = const AndroidInitializationSettings('@mipmap/ic_launcher');
+  var iosInitializationSettings = const DarwinInitializationSettings();
+
+  var initializationSetting = InitializationSettings(
+
+    android: androidInitializationSettings,
+    iOS: iosInitializationSettings,
+
+  );
+
+  await _flutterLocalNotificationsPlugin.initialize(
+
+    initializationSetting,
+    onDidReceiveNotificationResponse: (payload){
+
+    }
+  );
 
 }
 
 void firebaseInit(){
     FirebaseMessaging.onMessage.listen((message) {
 
-      var androidInitializationSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-      var iosInitializationSettings = DarwinInitializationSettings();
 
-      var initializationSetting = InitializationSettings(
+        print(message.notification!.title.toString());
+        print(message.notification!.body.toString());
 
-        android: androidInitializationSettings,
-        iOS: iosInitializationSettings,
 
+      showNotification(message);
+
+    });
+}
+
+Future<void> showNotification(RemoteMessage message) async{
+
+    AndroidNotificationChannel channel = AndroidNotificationChannel(
+        Random.secure().nextInt(100000).toString(),
+        'High important notification',
+      importance: Importance.max,
+    );
+
+    AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+        channel.id.toString(),
+        channel.name.toString(),
+        channelDescription: 'azam chanel description',
+        icon: '@mipmap/ic_launcher',
+        importance: Importance.max,
+        priority: Priority.max,
+        ticker: 'ticker',
+    );
+
+    const DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails(
+
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+
+    );
+
+    NotificationDetails notificationDetails = NotificationDetails(
+      android: androidNotificationDetails,
+      iOS: darwinNotificationDetails,
+    );
+
+    Future.delayed(Duration.zero, (){
+
+      _flutterLocalNotificationsPlugin.show(
+          0,
+          message.notification!.title.toString(),
+          message.notification!.body.toString(),
+          notificationDetails,
       );
 
     });
+
 }
 
 Future<String> getDeviceToken() async {
